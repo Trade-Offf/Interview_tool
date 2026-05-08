@@ -1,0 +1,6 @@
+# 候选人卡片（含个人信息，不提交）
+面试评价_*.html
+interview-card-*.html
+
+# macOS
+.DS_Store

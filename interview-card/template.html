@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{TITLE}}</title>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+      :root {
+        --bg: #f4f1ea;
+        --paper: #fbfaf7;
+        --card: #ffffff;
+        --text: #1f1f1c;
+        --subtext: #5f5a53;
+        --line: #ded8cd;
+        --line-dark: #cfc7b8;
+        --accent: #8b7d62;
+        --accent-deep: #6f624d;
+        --soft: #f1ece3;
+        --shadow: 0 10px 30px rgba(37, 33, 27, 0.06);
+        --pass-bg: #eef6ee;   --pass-text: #2e7d32;   --pass-border: #b8dbb9;
+        --warn-bg: #fdf6ec;   --warn-text: #8a6010;   --warn-border: #f0d9a0;
+        --risk-bg: #fdf1f0;   --risk-text: #b83232;   --risk-border: #f0c4c0;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "PingFang SC", "Microsoft YaHei", "Noto Serif SC", "Source Han Serif SC", serif;
+        background: var(--bg);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      .toolbar {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 28px 28px 0;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 20px;
+        background: var(--accent-deep);
+        color: #fff;
+        border: none;
+        font-family: inherit;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: background 0.18s;
+        user-select: none;
+      }
+      .export-btn:hover { background: #5a4e3b; }
+      .export-btn svg { flex-shrink: 0; }
+
+      .page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 20px 28px 48px;
+      }
+
+      .frame {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        padding: 42px 42px 36px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 20px;
+        margin-bottom: 26px;
+        gap: 24px;
+      }
+
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+        margin-bottom: 9px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        line-height: 1.25;
+        color: var(--text);
+      }
+
+      .meta-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-end;
+      }
+
+      .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--subtext);
+      }
+
+      .meta-label {
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .meta-value { color: var(--text); font-weight: 500; }
+
+      .verdict-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 26px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px 6px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid;
+        letter-spacing: 0.3px;
+      }
+
+      .badge-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .badge-pass   { background: var(--pass-bg); color: var(--pass-text); border-color: var(--pass-border); }
+      .badge-pass   .badge-dot { background: var(--pass-text); }
+      .badge-fail   { background: var(--risk-bg); color: var(--risk-text); border-color: var(--risk-border); }
+      .badge-fail   .badge-dot { background: var(--risk-text); }
+      .badge-level  { background: var(--soft); color: var(--accent-deep); border-color: var(--line-dark); }
+      .badge-level  .badge-dot { background: var(--accent-deep); }
+      .badge-warn   { background: var(--warn-bg); color: var(--warn-text); border-color: var(--warn-border); }
+      .badge-warn   .badge-dot { background: var(--warn-text); }
+
+      .section { margin-bottom: 22px; }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .section-index {
+        width: 26px;
+        height: 26px;
+        border: 1px solid var(--line-dark);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        color: var(--accent-deep);
+        background: var(--soft);
+        flex-shrink: 0;
+      }
+
+      .section-title h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+        letter-spacing: 0.3px;
+      }
+
+      .topic-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .topic-tag {
+        padding: 4px 12px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        font-size: 12.5px;
+        color: var(--subtext);
+        letter-spacing: 0.2px;
+      }
+
+      .prose {
+        font-size: 14px;
+        line-height: 1.9;
+        color: #3c3830;
+        margin: 0;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--line);
+        padding: 20px 20px 16px;
+      }
+
+      .panel-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ebe6dc;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .panel-icon {
+        width: 5px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+
+      .panel-plus .panel-icon { background: #b8dbb9; }
+      .panel-risk .panel-icon { background: #f0c4c0; }
+
+      ul.item-list {
+        margin: 0;
+        padding-left: 0;
+        list-style: none;
+      }
+
+      ul.item-list li {
+        position: relative;
+        padding-left: 16px;
+        margin: 6px 0;
+        font-size: 13.5px;
+        line-height: 1.75;
+        color: var(--subtext);
+      }
+
+      ul.item-list li::before {
+        content: "—";
+        position: absolute;
+        left: 0;
+        color: var(--line-dark);
+        font-size: 11px;
+        top: 2px;
+      }
+
+      .panel-plus ul.item-list li::before { color: #6aaa6e; }
+      .panel-risk ul.item-list li::before { color: #e57373; }
+
+      .conclusion-box {
+        background: var(--card);
+        border: 1px solid var(--line);
+        padding: 20px 22px;
+        margin-bottom: 22px;
+      }
+
+      .conclusion-box .prose strong { color: var(--text); font-weight: 600; }
+
+      .reminder-box {
+        padding: 18px 20px;
+        background: #fdf9f4;
+        border-left: 3px solid var(--accent);
+        margin-bottom: 0;
+      }
+
+      .reminder-label {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--accent-deep);
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .reminder-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 24px;
+      }
+
+      .reminder-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 7px;
+        font-size: 13.5px;
+        line-height: 1.7;
+        color: #403b35;
+      }
+
+      .reminder-item::before {
+        content: "✓";
+        color: var(--accent);
+        font-size: 12px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .reminder-note {
+        margin-top: 10px;
+        font-size: 12.5px;
+        color: var(--subtext);
+        line-height: 1.7;
+        padding-top: 10px;
+        border-top: 1px dashed var(--line-dark);
+      }
+
+      .footer-bar {
+        margin-top: 28px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: var(--accent);
+        letter-spacing: 0.5px;
+      }
+
+      .footer-bar span { color: var(--subtext); }
+
+      @media (max-width: 640px) {
+        .page { padding: 14px 16px 32px; }
+        .frame { padding: 26px 20px 24px; }
+        h1 { font-size: 22px; }
+        .topbar { flex-direction: column; }
+        .meta-group { align-items: flex-start; }
+        .two-col { grid-template-columns: 1fr; }
+        .reminder-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="toolbar">
+      <button class="export-btn" onclick="exportCard()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1v8M4 6l3 3 3-3M2 10v1.5A.5.5 0 002.5 12h9a.5.5 0 00.5-.5V10"
+                stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        导出截图
+      </button>
+    </div>
+
+    <div class="page">
+      <div class="frame" id="card">
+
+        <!-- ① 顶部标题区 -->
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Interview Evaluation</div>
+            <h1>{{H1_TITLE}}</h1>
+          </div>
+          <div class="meta-group">
+            <div class="meta-row">
+              <span class="meta-label">候选人</span>
+              <span class="meta-value">{{CANDIDATE}}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">岗位</span>
+              <span class="meta-value">{{POSITION}}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">轮次</span>
+              <span class="meta-value">{{ROUND}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ② 结论 Badges -->
+        <div class="verdict-row">
+          {{BADGES}}
+        </div>
+
+        <!-- ③ Section 01：考察内容 -->
+        <div class="section">
+          <div class="section-title">
+            <div class="section-index">01</div>
+            <h2>本轮考察内容</h2>
+          </div>
+          <div class="topic-grid">
+            {{TOPIC_TAGS}}
+          </div>
+        </div>
+
+        <!-- ④ Section 02：候选人表现 -->
+        <div class="section">
+          <div class="section-title">
+            <div class="section-index">02</div>
+            <h2>候选人表现</h2>
+          </div>
+          <div class="conclusion-box" style="background:#fafaf8;">
+            {{PERFORMANCE_PARAS}}
+          </div>
+        </div>
+
+        <!-- ⑤ 优点 / 风险双栏 -->
+        <div class="two-col">
+          <div class="panel panel-plus">
+            <div class="panel-title">
+              <div class="panel-icon"></div>主要优点
+            </div>
+            <ul class="item-list">
+              {{PROS_ITEMS}}
+            </ul>
+          </div>
+          <div class="panel panel-risk">
+            <div class="panel-title">
+              <div class="panel-icon"></div>风险点
+            </div>
+            <ul class="item-list">
+              {{RISKS_ITEMS}}
+            </ul>
+          </div>
+        </div>
+
+        <!-- ⑥ Section 03：综合结论 -->
+        <div class="section">
+          <div class="section-title">
+            <div class="section-index">03</div>
+            <h2>综合结论</h2>
+          </div>
+          <div class="conclusion-box">
+            <p class="prose">{{CONCLUSION}}</p>
+          </div>
+        </div>
+
+        <!-- ⑦ Section 04：安排提醒（可选） -->
+        {{REMINDER_SECTION}}
+
+        <!-- ⑧ 底部签名 -->
+        <div class="footer-bar">
+          <span>Interview Evaluation · {{POSITION_SHORT}}</span>
+          <span>{{YEAR}} · {{ROUND}}</span>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      async function exportCard() {
+        const btn = document.querySelector('.export-btn');
+        const orig = btn.innerHTML;
+        btn.textContent = '生成中…';
+        btn.disabled = true;
+        try {
+          const canvas = await html2canvas(document.getElementById('card'), {
+            scale: 2, useCORS: true, backgroundColor: '#fbfaf7', logging: false,
+          });
+          const link = document.createElement('a');
+          link.download = '{{FILE_NAME}}';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        } catch (e) {
+          alert('导出失败，请检查网络后重试。');
+        } finally {
+          btn.innerHTML = orig;
+          btn.disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>
