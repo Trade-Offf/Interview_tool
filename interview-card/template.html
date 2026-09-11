@@ -237,6 +237,20 @@
         color: var(--accent-deep);
       }
 
+      /* JD 重点维度标签（加在 score-point-title 内） */
+      .score-focus-tag {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 1px 8px;
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        color: var(--accent-deep);
+        background: var(--soft);
+        border: 1px solid var(--line-dark);
+        vertical-align: 1px;
+      }
+
       /* 定级与交接建议 */
       .handoff-grid {
         display: grid;
@@ -572,7 +586,7 @@
         <!-- ⑧ Section 05：安排提醒（可选） -->
         {{REMINDER_SECTION}}
 
-        <!-- ⑧ 底部签名 -->
+        <!-- ⑨ 底部签名 -->
         <div class="footer-bar">
           <span>Interview Evaluation · {{POSITION_SHORT}}</span>
           <span>{{YEAR}} · {{ROUND}}</span>
